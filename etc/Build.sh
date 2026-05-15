@@ -246,8 +246,19 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         exit 1
     fi
 
+    _boost=$(brew --prefix boost 2>/dev/null || true)
+    if [[ -z "$_boost" || ! -d "$_boost/lib" || ! -d "$_boost/include" ]]; then
+        echo "[ERROR] boost not found or broken. Run: brew install boost" >&2
+        exit 1
+    fi
+
     export PATH="$_bison/bin:$_flex/bin:$PATH"
     export CMAKE_PREFIX_PATH="${_ortools}"
+    cmakeOptions+=("-DBoost_ROOT=$_boost")
+    _boost_cmake_dir=$(find "$_boost/lib/cmake" -maxdepth 1 -type d -name 'Boost-*' | head -n 1)
+    if [[ -n "$_boost_cmake_dir" ]]; then
+        cmakeOptions+=("-DBoost_DIR=$_boost_cmake_dir")
+    fi
 
     _qt5=$(brew --prefix qt@5 2>/dev/null || true)
     if [[ -z "$_qt5" || ! -d "$_qt5/lib" ]]; then
@@ -255,7 +266,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         exit 1
     fi
     
-    cmakeOptions+=" -DQt5_DIR=$_qt5/lib/cmake/Qt5"
+    cmakeOptions+=("-DQt5_DIR=$_qt5/lib/cmake/Qt5")
 
     _tcl8=$(brew --prefix tcl-tk@8 2>/dev/null || true)     
     if [[ -z "$_tcl8" || ! -d "$_tcl8/lib" || ! -d "$_tcl8/include" ]]; then
@@ -263,12 +274,12 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
         exit 1
     fi
     
-    cmakeOptions+=" -DTCL_LIBRARY=$_tcl8/lib/libtcl8.6.dylib"
+    cmakeOptions+=("-DTCL_LIBRARY=$_tcl8/lib/libtcl8.6.dylib")
 
-    cmakeOptions+=" -DTCL_INCLUDE_PATH=$_tcl8/include"
-    cmakeOptions+=" -DFLEX_INCLUDE_DIR=$_flex/include"
+    cmakeOptions+=("-DTCL_HEADER=$_tcl8/include/tcl.h")
+    cmakeOptions+=("-DFLEX_INCLUDE_DIR=$_flex/include")
 
-    cmakeOptions+=" -DCMAKE_CXX_FLAGS=-DBOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED"
+    cmakeOptions+=("-DCMAKE_CXX_FLAGS=-DBOOST_STACKTRACE_GNU_SOURCE_NOT_REQUIRED")
 
     _icu="$(brew --prefix icu4c 2>/dev/null || true)"
     if [[ -z "$_icu" || ! -d "$_icu/lib" ]]; then
