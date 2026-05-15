@@ -279,6 +279,8 @@ transceivers, OpenPower-based Microwatt etc.
 
 To build OpenROAD tools locally on your machine, follow steps
 from [here](docs/user/Build.md).
+macOS users can also follow the focused
+[macOS build and usage guide](README-macOS.md).
 
 ## Regression Tests
 
